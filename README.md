@@ -26,16 +26,28 @@ And returns:
 ## Workflow
 
 ```mermaid
-flowchart TD
-    U[User] --> A[ASI1 Chat]
-    A --> B[agent.py]
-    B --> C[image_analysis.py]
-    C --> D[OpenAI Vision API]
-    D --> C
-    C --> B
-    B --> A
-    A --> U
+sequenceDiagram
+    participant U as User
+    participant CI as Chat Interface
+    participant AG as agent.py
+    participant IA as image_analysis.py
+    participant OAI as OpenAI Vision API
+
+    U->>CI: Send query + image
+    CI->>AG: ChatMessage(text + ResourceContent)
+    AG-->>CI: ChatAcknowledgement
+    AG->>AG: Extract image URL from ResourceContent
+    AG->>IA: get_image_analysis(prompt + image_url)
+    IA->>OAI: responses.create(model, input_image)
+    OAI-->>IA: Analysis text
+    IA-->>AG: Final response text
+    AG-->>CI: ChatMessage(text response)
+    CI-->>U: Show result
 ```
+
+Note:
+- In this implementation, image analysis uses the attachment URL from `ResourceContent`.
+- The Chat Interface may still upload/store the file internally, but the agent does not download from storage directly.
 
 ## Environment Variables
 
