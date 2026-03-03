@@ -27,14 +27,14 @@ And returns:
 
 ```mermaid
 flowchart TD
-    U[User in Agentverse Chat] --> C[Chat Interface]
-    C -->|ChatMessage: text + image attachment| A[Image Analysis Agent]
-    A -->|Send ChatAcknowledgement| C
-    A -->|Extract image URL from ResourceContent| A
-    A -->|Build prompt content| O[OpenAI Vision API]
-    O -->|Analysis text| A
-    A -->|ChatMessage response| C
-    C --> U
+    U[User] --> A[Agentverse Chat]
+    A --> B[agent.py]
+    B --> C[image_analysis.py]
+    C --> D[OpenAI Vision API]
+    D --> C
+    C --> B
+    B --> A
+    A --> U
 ```
 
 ## Environment Variables
