@@ -15,13 +15,7 @@ from uagents_core.contrib.protocols.chat import (
 
 from image_analysis import get_image_analysis
 
-agent = Agent(
-    name="image-analysis-agent",
-    seed="image-analysis-agent",
-    port=8000,
-    mailbox=True,
-    handle_messages_concurrently=True,
-)
+agent = Agent()
 chat_proto = Protocol(spec=chat_protocol_spec)
 
 
@@ -63,7 +57,7 @@ def extract_image_url(item: ResourceContent) -> str | None:
 
 @chat_proto.on_message(ChatMessage)
 async def handle_message(ctx: Context, sender: str, msg: ChatMessage):
-    ctx.logger.info("Got a message from %s", sender)
+    ctx.logger.info(f"Got a message from {sender}")
 
     await ctx.send(
         sender,
@@ -77,13 +71,13 @@ async def handle_message(ctx: Context, sender: str, msg: ChatMessage):
 
     for item in msg.content:
         if isinstance(item, StartSessionContent):
-            ctx.logger.info("Got a start session message from %s", sender)
+            ctx.logger.info(f"Got a start session message from {sender}")
             await ctx.send(sender, create_metadata_chat({"attachments": "true"}))
         elif isinstance(item, TextContent):
-            ctx.logger.info("Got text content from %s: %s", sender, item.text)
+            ctx.logger.info(f"Got text content from {sender}: {item.text}")
             prompt_content.append({"type": "text", "text": item.text})
         elif isinstance(item, ResourceContent):
-            ctx.logger.info("Got resource content from %s", sender)
+            ctx.logger.info(f"Got resource content from {sender}")
             image_url = extract_image_url(item)
             if not image_url:
                 await ctx.send(
@@ -93,7 +87,7 @@ async def handle_message(ctx: Context, sender: str, msg: ChatMessage):
                     ),
                 )
                 return
-            ctx.logger.info("Using image URL=%s", image_url)
+            ctx.logger.info(f"Using image URL={image_url}")
             prompt_content.append({"type": "resource_url", "url": image_url})
 
     if not prompt_content:
@@ -106,7 +100,7 @@ async def handle_message(ctx: Context, sender: str, msg: ChatMessage):
         response = get_image_analysis(prompt_content)
         await ctx.send(sender, create_text_chat(response))
     except Exception as err:
-        ctx.logger.error("Image analysis error: %s", err)
+        ctx.logger.error(f"Image analysis error: {err}")
         await ctx.send(
             sender,
             create_text_chat("Sorry, I couldn't analyze the image. Please try again later."),
@@ -115,9 +109,7 @@ async def handle_message(ctx: Context, sender: str, msg: ChatMessage):
 
 @chat_proto.on_message(ChatAcknowledgement)
 async def handle_ack(ctx: Context, sender: str, msg: ChatAcknowledgement):
-    ctx.logger.info(
-        "Got an acknowledgement from %s for %s", sender, msg.acknowledged_msg_id
-    )
+    ctx.logger.info(f"Got an acknowledgement from {sender} for {msg.acknowledged_msg_id}")
 
 
 agent.include(chat_proto, publish_manifest=True)
