@@ -27,7 +27,7 @@ And returns:
 
 ```mermaid
 flowchart TD
-    U[User] --> A[Agentverse Chat]
+    U[User] --> A[ASI1 Chat]
     A --> B[agent.py]
     B --> C[image_analysis.py]
     C --> D[OpenAI Vision API]
